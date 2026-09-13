@@ -78,6 +78,21 @@ img { display: block; max-width: 100%; }
 .nav a:hover { color: var(--text); background: var(--bg-elev); }
 .nav a.active { color: #fff; background: var(--accent); }
 
+.nav a .count {
+  display: inline-block;
+  min-width: 18px;
+  margin-inline-start: 4px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.nav a:not(.active) .count { background: var(--border); }
+
 .search {
   display: flex;
   align-items: center;
@@ -497,6 +512,140 @@ img { display: block; max-width: 100%; }
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- Animations ---------- */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes heroZoom {
+  from { opacity: 0; transform: scale(1.12); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.45); }
+  50% { box-shadow: 0 0 22px 4px rgba(229, 9, 20, 0.25); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(50%) translateY(14px); }
+  to { opacity: 1; transform: translateX(50%) translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* غلاف المحتوى عند تغيير الصفحة */
+.main > * { animation: fadeIn 0.35s ease both; }
+
+/* Hero */
+.hero { animation: fadeUp 0.55s ease both; }
+.hero-backdrop { animation: heroZoom 0.9s ease both; }
+.hero-content { animation: fadeUp 0.6s 0.15s ease both; }
+.hero-nav, .hero-dots { animation: fadeIn 0.8s 0.35s ease both; }
+
+/* عناوين الأقسام */
+.section-head h2 { position: relative; }
+.section-head h2::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -6px;
+  width: 100%;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  transform: scaleX(0);
+  transform-origin: right;
+  animation: slideInLine 0.6s 0.2s ease forwards;
+}
+
+@keyframes slideInLine {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* بطاقات */
+.row .card { animation: fadeUp 0.5s ease both; }
+
+.row .card:nth-child(1) { animation-delay: 0.02s; }
+.row .card:nth-child(2) { animation-delay: 0.05s; }
+.row .card:nth-child(3) { animation-delay: 0.08s; }
+.row .card:nth-child(4) { animation-delay: 0.11s; }
+.row .card:nth-child(5) { animation-delay: 0.14s; }
+.row .card:nth-child(6) { animation-delay: 0.17s; }
+.row .card:nth-child(7) { animation-delay: 0.2s; }
+.row .card:nth-child(8) { animation-delay: 0.23s; }
+.row .card:nth-child(9) { animation-delay: 0.26s; }
+.row .card:nth-child(10) { animation-delay: 0.29s; }
+.row .card:nth-child(11) { animation-delay: 0.32s; }
+.row .card:nth-child(12) { animation-delay: 0.35s; }
+
+.card { will-change: transform; }
+.card .card-poster { transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.card:hover .card-poster { transform: scale(1.07); }
+
+/* زر المشاهدة الرئيسي */
+.btn-primary { animation: pulse-glow 2.6s infinite; }
+
+/* الملاحظة داخل صفحة الفيلم */
+.movie-grid { animation: fadeUp 0.6s ease both; }
+
+/* صندوق الرسائل */
+.toast:not([hidden]) { animation: toastIn 0.3s ease both; }
+
+/* شاشة تحميل */
+.spinner { animation: spin 0.8s linear infinite; }
+
+/* شاشة 404 */
+.not-found .icon { animation: float 2.4s ease-in-out infinite; }
+
+/* تحميل مبدئي للرئيسية */
+.loading-skeleton {
+  height: 14px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--bg-elev) 25%, var(--border) 50%, var(--bg-elev) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.3s linear infinite;
+  margin-bottom: 12px;
+}
+
+/* عنصر يظهر عند التمرير */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
 
 .empty { text-align: center; padding: 70px 20px; color: var(--muted); }
 .empty .icon { font-size: 3rem; margin-bottom: 10px; }

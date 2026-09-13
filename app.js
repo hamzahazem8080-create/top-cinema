@@ -1,4 +1,4 @@
-/* توب سينما — تطبيق صفحة واحدة (SPA) بدون خادم */
+/* Egypt Cinema — تطبيق صفحة واحدة (SPA) بدون خادم */
 (function () {
   "use strict";
 
@@ -153,6 +153,23 @@
   const backdrop = (b, w) => (b.backdropPath ? IMG + "/w" + w + b.backdropPath : "");
   const pct = (score) => Math.round((score || 0) * 10);
 
+  /* تحويل snapshot مخزن إلى بيانات بطاقة */
+  function briefFromSnapshot(s) {
+    return {
+      id: s.tmdbId,
+      title: s.title,
+      originalTitle: s.title,
+      year: s.year,
+      overview: "",
+      posterPath: s.posterPath,
+      backdropPath: s.backdropPath,
+      voteAverage: s.voteAverage ?? 0,
+      voteCount: 0,
+      genres: [],
+      runtime: null,
+    };
+  }
+
   /* ---------- كرت الفيلم ---------- */
   function cardHtml(b) {
     const fav = isFav(b.id);
@@ -163,10 +180,20 @@
       '" style="' +
       (img ? "background-image:url('" + img + "')" : "") +
       '">' +
-      (!img ? esc((b.title || "؟").charAt(0)) : "") +
+      (!img ? esc(b.title || "؟").charAt(0) : "") +
       "</div>";
     return (
-      '<div class="card">' +
+      '<div class="card" data-id="' +
+      b.id +
+      '" data-title="' +
+      esc(b.title) +
+      '" data-poster="' +
+      esc(b.posterPath || "") +
+      '" data-year="' +
+      (b.year || "") +
+      '" data-rating="' +
+      (b.voteAverage || "") +
+      '">' +
       post +
       '<span class="card-rating">⭐ ' +
       fa(pct(b.voteAverage)) +
@@ -320,6 +347,27 @@
     t._t = setTimeout(() => (t.hidden = true), 1800);
   }
 
+  /* ظهور العناصر عند التمرير */
+  function observeReveals() {
+    const els = document.querySelectorAll(".reveal");
+    if (!("IntersectionObserver" in window)) {
+      els.forEach((el) => el.classList.add("visible"));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("visible");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+    els.forEach((el) => io.observe(el));
+  }
+
   /* ---------- الصفحات ---------- */
   const views = {};
 
@@ -419,7 +467,7 @@
         rows
           .map(
             (r, i) =>
-              '<section class="section"><div class="section-head"><h2>' +
+              '<section class="section reveal"><div class="section-head"><h2>' +
               r.title +
               '</h2><a class="see-all" href="#/movies">عرض الكل</a></div>' +
               gridHtml(r.list) +
@@ -621,7 +669,7 @@
         "</div>" +
         (trailer ? '<div><a href="https://www.youtube.com/watch?v=' + trailer.key + '" target="_blank" rel="noopener" style="color:var(--accent)">▶ مشاهدة الإعلان الرسمي</a></div>' : "") +
         "</div></div></div></div></section>" +
-        '<section class="section"><div class="section-head"><h2>أفلام مشابهة</h2></div>' +
+        '<section class="section reveal"><div class="section-head"><h2>أفلام مشابهة</h2></div>' +
         gridHtml(similar) +
         "</section>";
 
@@ -706,15 +754,15 @@
 
     if (params.type === "favorites") {
       title = "المفضلة";
-      list = Object.values(lib.favorites).map((i) => i.snapshot);
+      list = Object.values(lib.favorites).map((i) => briefFromSnapshot(i.snapshot));
     } else if (params.type === "history") {
       title = "آخر المشاهدة";
       list = Object.values(lib.history)
         .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
-        .map((i) => i.snapshot);
+        .map((i) => briefFromSnapshot(i.snapshot));
     } else if (params.type === "rated") {
       title = "قيمت عليها";
-      list = Object.values(lib.ratings).map((i) => i.snapshot);
+      list = Object.values(lib.ratings).map((i) => briefFromSnapshot(i.snapshot));
     }
 
     app.innerHTML =
@@ -730,15 +778,23 @@
 
   /* ---------- ربط عام (الأزرار داخل البطاقات) ---------- */
   function bindGlobal() {
+    observeReveals();
     document.querySelectorAll("[data-fav]").forEach((btn) =>
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        const card = btn.closest(".card");
         const id = +btn.dataset.fav;
+        const b = {
+          id,
+          title: card?.dataset.title || "فيلم",
+          year: card?.dataset.year ? +card.dataset.year : null,
+          posterPath: card?.dataset.poster || null,
+          voteAverage: card?.dataset.rating ? +card.dataset.rating : null,
+        };
         const lib = loadLib();
         const isNow = !lib.favorites[id];
         if (isNow) {
-          const b = { id, title: btn.closest(".card")?.querySelector(".card-title")?.textContent || "فيلم" };
           lib.favorites[id] = { snapshot: snapshotOf(b) };
         } else {
           delete lib.favorites[id];
